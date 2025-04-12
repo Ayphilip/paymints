@@ -675,13 +675,13 @@ function Home() {
                 </div>
             </div>
 
-            <div className="footer">
+            <div class="footer">
 
-                <div className="copyright">
-                    <p>Copyright © Designed &amp; Developed by <a href="https://dexignlab.com/" target="_blank">DexignLab</a> 2023</p>
-                </div>
+                            <div class="copyright">
+                                <p>Copyright © Developed by <a href="https://ravensocial.app/" target="_blank">Paymint</a> 2025</p>
+                            </div>
 
-            </div>
+                        </div>
         </div>
     )
 }
