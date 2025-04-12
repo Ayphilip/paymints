@@ -1,0 +1,33 @@
+{
+  "name": "paymint",
+  "version": "1.0.0",
+  "description": "",
+  "proxy": "http://127.0.0.1:5000",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon --watch backend backend/server.js",
+    "build": "npm install && cd frontend && npm install && npm run build",
+    "test": "npx chopd && cd frontend && npm run dev"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.1692.0",
+    "bcryptjs": "^3.0.2",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "googleapis": "^148.0.0",
+    "html-pdf": "^3.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.12.1",
+    "mssql": "^11.0.1",
+    "multer": "^1.4.5-lts.2",
+    "multer-s3": "^3.0.1",
+    "nodemailer": "^6.10.0",
+    "nodemon": "^3.1.9",
+    "react-router-dom": "^7.4.0"
+  }
+}
