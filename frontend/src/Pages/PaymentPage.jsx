@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Headers from '../component/headers'
 import Logo from '../assets/logo.png'
 import { useDispatch, useSelector } from 'react-redux'
@@ -17,7 +17,7 @@ import {
     clusterApiUrl,
     LAMPORTS_PER_SOL
 } from '@solana/web3.js';
-import { useConnectWallet, usePrivy, useSolanaWallets } from '@privy-io/react-auth';
+import { useConnectWallet, usePrivy, useSignTransaction, useSolanaWallets } from '@privy-io/react-auth';
 import {
     getAssociatedTokenAddress,
     createTransferInstruction,
@@ -49,7 +49,8 @@ function PaymentPage() {
             console.error('Wallet connection failed:', error);
         },
     });
-    const { ready, authenticated, user } = usePrivy();
+    const { ready, authenticated, user, linkWallet } = usePrivy();
+
 
 
     const { id } = useParams();
@@ -69,16 +70,20 @@ function PaymentPage() {
     const [cart, setCart] = useState([])
     const [errState, setErrState] = useState(false)
     const [loadingPayment, setLoadingPayment] = useState(false)
+    const [paymentStatus, setPaymentStatus] = useState(0)
+    const [paymentMessage, setpaymentMessage] = useState('')
 
 
     const triggerPayment = async () => {
         setLoadingPayment(true)
+        const provider = window?.solana;
         try {
             const connection = new Connection(
                 'https://mainnet.helius-rpc.com/?api-key=3ab17e93-2cda-4743-88e9-2b9beae7c07e',
                 'confirmed'
             );
 
+            await provider.connect()
             // Connect Phantom if not connected
 
             const userAddress = user?.wallet?.address;
@@ -91,18 +96,22 @@ function PaymentPage() {
             const amountInBaseUnits = Math.floor(amountToPush);
 
             if (amountInBaseUnits <= 0) {
-                console.error("❌ Invalid payment amount.");
+                setPaymentStatus(1)
+                setpaymentMessage("❌ Invalid payment amount.");
+                setLoadingPayment(false)
                 alert("Invalid payment amount.");
                 return;
             }
 
             // Get sender token account (ATA)
-            const senderATA = await getOrCreateAssociatedTokenAccount(
-                connection,
-                fromPubkey,
-                mint,
-                fromPubkey
-            );
+            // const senderATA = await getOrCreateAssociatedTokenAccount(
+            //     connection,
+            //     fromPubkey,
+            //     mint,
+            //     fromPubkey
+            // );
+
+            const senderATA = await getAssociatedTokenAddress(mint, fromPubkey, true)
 
             let recipientATA;
             try {
@@ -114,16 +123,18 @@ function PaymentPage() {
                     true // allowOwnerOffCurve
                 );
             } catch (err) {
-                console.error("❌ Could not create/find recipient ATA", err);
+                setPaymentStatus(1)
+                setpaymentMessage("❌ Could not create/find recipient ATA", err);
+                setLoadingPayment(false)
                 alert("Could not complete payment. The recipient might not support this token.");
                 return;
             }
 
             // Build transfer instruction
-            console.log(senderATA.address)
+            console.log(senderATA)
             console.log(recipientATA.address)
             const transferIx = createTransferInstruction(
-                senderATA.address,
+                senderATA,
                 recipientATA.address,
                 fromPubkey,
                 amountInBaseUnits
@@ -135,8 +146,13 @@ function PaymentPage() {
             transaction.feePayer = fromPubkey;
             transaction.recentBlockhash = latestBlockhash.blockhash;
 
+            console.log(transaction)
+
             // Sign with Phantom
-            const signedTx = await provider.signTransaction(transaction);
+
+            console.log(wallets)
+
+            const signedTx = await provider.signTransaction(transaction)
             const txid = await connection.sendRawTransaction(signedTx.serialize());
 
             // Confirm transaction
@@ -148,12 +164,13 @@ function PaymentPage() {
                 },
                 'confirmed'
             );
-
-            console.log("✅ Payment successful! Transaction ID:", txid);
+            setPaymentStatus(2)
+            setpaymentMessage("✅ Payment successful! Transaction ID:", txid);
             setLoadingPayment(false)
-            alert(`Payment successful!\nTx ID: ${txid}`);
+            // alert(`Payment successful!\nTx ID: ${txid}`);
         } catch (err) {
-            console.error("❌ Payment failed:", err);
+            setPaymentStatus(1)
+            setpaymentMessage("❌ Payment failed:", err);
             setLoadingPayment(false)
             alert("Payment failed. Please try again or check console for details.");
         }
@@ -275,6 +292,27 @@ function PaymentPage() {
         }
     }, [cart, discountInput, tipInput, order, loadingState]);
 
+    const modalRef = useRef(null);
+
+
+
+    // Set up modal event listener for close
+    useEffect(() => {
+        const modalEl = modalRef.current;
+
+        const handleModalClose = () => {
+            if (paymentStatus == 2) {
+                window.location.reload();
+            }
+        };
+
+        modalEl?.addEventListener('hidden.bs.modal', handleModalClose);
+
+        return () => {
+            modalEl?.removeEventListener('hidden.bs.modal', handleModalClose);
+        };
+    }, [paymentStatus]);
+
 
     return (
 
@@ -350,9 +388,12 @@ function PaymentPage() {
 
                                                     {ready && (authenticated && user ?
                                                         (
-                                                            user?.wallet?.address === order?.createdBy?.address ? null : loadingPayment ? 
-                                                            <button className='btn btn-primary mt-3 w-100'><i className='spinner spinner-border-sm spinner-border'></i></button>
-                                                            : <button className='btn btn-primary mt-3 w-100' onClick={triggerPayment}><i className='ti ti-lock'></i> Pay</button>
+                                                            user?.wallet?.address === order?.createdBy?.address ? null : loadingPayment ?
+                                                                <button className='btn btn-primary mt-3 w-100'><i className='spinner spinner-border-sm spinner-border'></i></button>
+                                                                : <button className='btn btn-primary mt-3 w-100'
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#exampleModalCenter"
+                                                                    onClick={triggerPayment}><i className='ti ti-lock'></i> Pay</button>
                                                         ) :
                                                         <button className='btn btn-primary mt-3 w-100' disabled={!ready && true}
                                                             onClick={connectWallet}><i className='ti ti-lock'></i> Connect Wallet</button>)
@@ -449,7 +490,39 @@ function PaymentPage() {
                                 </div>
                             </div>
                         </div>
-                    
+
+                        <div class="modal fade" id="exampleModalCenter" ref={modalRef}>
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title"></h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal">
+                                        </button>
+                                    </div>
+                                    <div className="modal-body text-center">
+                                        {loadingPayment && <>
+                                            <i className='spinner spinner-border text-red'></i>
+                                            <div>Please wait...</div>
+                                        </>}
+
+                                        {!loadingPayment && (
+                                            <>
+                                                {paymentStatus == 1 && <i className="bi bi-x text-danger" style={{ fontSize: '80px' }}></i>}
+                                                {paymentStatus == 2 && <i className="bi bi-check2-circle text-success" style={{ fontSize: '80px' }}></i>}
+                                                <h3 className="mt-3">{paymentMessage}</h3>
+                                            </>
+                                        )}
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+
+                        {user?.wallet?.address && <div className='d-flex align-items-center justify-content-center'>
+                            <a href='/alltransaction' className='btn btn-primary m-3'>View Payments History</a>
+                        </div>}
+
                         <Footer />
                     </div>
 

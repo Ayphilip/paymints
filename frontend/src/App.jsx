@@ -10,6 +10,7 @@ import OrderPage from './Pages/OrderPage';
 import Preview from './Pages/Preview';
 import PaymentPage from './Pages/PaymentPage';
 import ProfilePage from './Pages/ProfilePage';
+import TransactionView from './Pages/TransactionView';
 
 function App() {
   const userSignin = useSelector(state => state.userSignin);
@@ -22,6 +23,7 @@ function App() {
         <Route path='/dashboard' element={<Home/>} />
         <Route path='/profile' element={<ProfilePage/>} />
         <Route path='/paymentorder' element={<OrderPage/>}/>
+        <Route path='/alltransaction' element={<TransactionView/>} />
         <Route path='/order' element={<Preview/>}/>
         <Route path='/order/:id/pay' element={<PaymentPage/>}/>
         <Route path="*" element={<Navigate to="/" replace />} />
