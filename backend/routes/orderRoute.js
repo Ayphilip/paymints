@@ -87,7 +87,7 @@ router.get("/orders", isAuth, async (req, res) => {
     if (type) query.orderType = type;
 
     const orders = await Order.find(query)
-      .populate("createdBy", "name email")
+      .populate("createdBy", "name email address")
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
       .sort({ createdAt: -1 });
@@ -102,7 +102,7 @@ router.get("/orders", isAuth, async (req, res) => {
 // GET /orders/:orderNo - Fetch a single order
 router.get("/orders/:orderNo", async (req, res) => {
   try {
-    const order = await Order.findOne({ orderNo: req.params.orderNo }).populate("createdBy", "name email");
+    const order = await Order.findOne({ orderNo: req.params.orderNo }).populate("createdBy", "name email address");
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }

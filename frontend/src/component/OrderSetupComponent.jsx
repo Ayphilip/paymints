@@ -96,14 +96,16 @@ function OrderSetupComponent({ comps, formDatas }) {
 
     const copyToClipboard = (e) => {
         e.preventDefault();
-        navigator.clipboard.writeText(orderLink).then(() => {
-            alert('Link copied to clipboard!');
-        });
+        if (order) {
+            navigator.clipboard.writeText(`http://localhost:5173/order/${orderSuccessResponse?._id || ''}/pay?orderNo=${orderSuccessResponse?.orderNo}`).then(() => {
+                alert('Link copied to clipboard!');
+            });
+        }
     };
 
     const modalRef = useRef(null);
 
-    const orderLink = `http://localhost:5173/orders/${order?._id || ''}/pay?orderNo=${order.orderNo}`;
+
 
     // Set up modal event listener for close
     useEffect(() => {
@@ -126,9 +128,11 @@ function OrderSetupComponent({ comps, formDatas }) {
             <div class="col-xl-4">
                 <div class="filter cm-content-box box-primary">
                     <div class="content-title">
-                        <div class="cpa">
+                        {formData.orderNo ? <div class="cpa">
+                            Edit Context (Order No: {formData.orderNo})
+                        </div> : <div class="cpa">
                             Context
-                        </div>
+                        </div>}
                     </div>
                     <div class="cm-content-body form excerpt">
                         <div class="card-body">
@@ -190,9 +194,9 @@ function OrderSetupComponent({ comps, formDatas }) {
                                                 style={{ borderColor: errPg1 && !formData.orderStatus && '#ff0000' }}
                                                 onChange={(e) => setFormData({ ...formData, orderStatus: e.target.value })}
                                             >
-                                                <option value="draft">Draft</option>
-                                                <option value="pending">Pending</option>
-                                                <option value="paid">Paid</option>
+                                                <option value="0">Active</option>
+                                                <option value="1">Pending</option>
+                                                <option value="2">Closed</option>
                                             </select>
                                         </div>
                                     </div>
@@ -908,7 +912,7 @@ function OrderSetupComponent({ comps, formDatas }) {
                                     <i className="bi bi-check2-circle text-success" style={{ fontSize: '80px' }}></i>
                                     <h3 className="mt-3">Success Saving Order</h3>
                                     <div className="d-flex justify-content-center mt-4">
-                                        {orderSuccessResponse.QRcodeEnabled && <QRCode value={orderLink} size={128} />}
+                                        {orderSuccessResponse.QRcodeEnabled && <QRCode value={`http://localhost:5173/order/${orderSuccessResponse?._id || ''}/pay?orderNo=${orderSuccessResponse?.orderNo}`} size={128} />}
                                     </div>
                                 </>
                             )}
@@ -919,7 +923,7 @@ function OrderSetupComponent({ comps, formDatas }) {
                                         <input
                                             type="text"
                                             readOnly
-                                            value={orderLink}
+                                            value={`http://localhost:5173/order/${orderSuccessResponse?._id || ''}/pay?orderNo=${orderSuccessResponse?.orderNo}`}
                                             className="form-control"
                                         />
                                         <button type="submit" className="btn btn-primary input-group-text">

@@ -38,7 +38,7 @@ const orderSchema = new mongoose.Schema({
   orderDescription: { type: String, default: "", trim: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   createdAt: { type: Date, default: Date.now },
-  orderStatus: { type: String, enum: ["draft", "pending", "paid"], default: "draft" },
+  orderStatus: { type: String, enum: ["0", "1", "2"], default: "0" },
 
   // Invoice Specific
   invoiceType: { type: String },

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Connection, PublicKey } from '@solana/web3.js';
 import { getAssociatedTokenAddress, getAccount, getMint } from '@solana/spl-token';
 import { usePrivy, useSolanaWallets } from '@privy-io/react-auth';
+// import { getAccount } from '@solana/spl-token';
 const SOLANA_RPC = "https://mainnet.helius-rpc.com/?api-key=3ab17e93-2cda-4743-88e9-2b9beae7c07e";
 const SOLANA_CONFIG = {
   rpcEndpoint: process.env.REACT_APP_SOLANA_RPC || SOLANA_RPC,
@@ -380,7 +381,7 @@ export const invoiceType = [
       orderImage: "",
       orderDescription: "",
       createdAt: new Date().toISOString(),
-      orderStatus: "draft",
+      orderStatus: "0",
 
       // Invoice Specific
       invoiceType: 0,
@@ -443,7 +444,7 @@ export const invoiceType = [
       orderImage: "",
       orderDescription: "",
       createdAt: new Date().toISOString(),
-      orderStatus: "draft",
+      orderStatus: "0",
 
       // Invoice Specific
       invoiceType: 1,
@@ -506,7 +507,7 @@ export const invoiceType = [
       orderImage: "",
       orderDescription: "",
       createdAt: new Date().toISOString(),
-      orderStatus: "draft",
+      orderStatus: "0",
 
       // Invoice Specific
       invoiceType: 2,
@@ -569,7 +570,7 @@ export const invoiceType = [
       orderImage: "",
       orderDescription: "",
       createdAt: new Date().toISOString(),
-      orderStatus: "draft",
+      orderStatus: "0",
 
       // Invoice Specific
       invoiceType: 3,
@@ -632,7 +633,7 @@ export const invoiceType = [
       orderImage: "",
       orderDescription: "",
       createdAt: new Date().toISOString(),
-      orderStatus: "draft",
+      orderStatus: "0",
 
       // Invoice Specific
       invoiceType: 4,
@@ -695,7 +696,7 @@ export const invoiceType = [
       orderImage: "",
       orderDescription: "",
       createdAt: new Date().toISOString(),
-      orderStatus: "draft",
+      orderStatus: "0",
 
       // Invoice Specific
       invoiceType: 5,
@@ -758,7 +759,7 @@ export const invoiceType = [
       orderImage: "",
       orderDescription: "",
       createdAt: new Date().toISOString(),
-      orderStatus: "draft",
+      orderStatus: "0",
 
       // Invoice Specific
       invoiceType: 6,
@@ -824,7 +825,7 @@ export const payrollType = [
       orderImage: "",
       orderDescription: "",
       createdAt: new Date().toISOString(),
-      orderStatus: "draft",
+      orderStatus: "0",
 
       // Invoice Specific
       invoiceType: 0,
@@ -887,7 +888,7 @@ export const payrollType = [
       orderImage: "",
       orderDescription: "",
       createdAt: new Date().toISOString(),
-      orderStatus: "draft",
+      orderStatus: "0",
 
       // Invoice Specific
       invoiceType: 0,
@@ -950,7 +951,7 @@ export const payrollType = [
       orderImage: "",
       orderDescription: "",
       createdAt: new Date().toISOString(),
-      orderStatus: "draft",
+      orderStatus: "0",
 
       // Invoice Specific
       invoiceType: 1,
@@ -1013,7 +1014,7 @@ export const payrollType = [
       orderImage: "",
       orderDescription: "",
       createdAt: new Date().toISOString(),
-      orderStatus: "draft",
+      orderStatus: "0",
 
       // Invoice Specific
       invoiceType: 0,
@@ -1076,7 +1077,7 @@ export const payrollType = [
       orderImage: "",
       orderDescription: "",
       createdAt: new Date().toISOString(),
-      orderStatus: "draft",
+      orderStatus: "0",
 
       // Invoice Specific
       invoiceType: 0,
@@ -1138,7 +1139,7 @@ export const defaultData = {
   orderImage: "",
   orderDescription: "",
   createdAt: new Date().toISOString(),
-  orderStatus: "draft",
+  orderStatus: "0",
 
   // Invoice Specific
   invoiceType: 0,

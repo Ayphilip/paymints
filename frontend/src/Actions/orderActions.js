@@ -31,6 +31,7 @@ const saveOrder = (orderData) => async (dispatch, getState) => {
             const { data } = await Axios.put(`/api/orders/orders/${orderData.orderNo}`, orderData, {
                 headers: { Authorization: `Bearer ${userInfo.token}` },
             });
+            console.log(data)
             dispatch({ type: ORDER_SAVE_SUCCESS, payload: data });
         } else {
             const invoice = generate7DigitId()
@@ -93,13 +94,10 @@ const detailsOrder = (orderNo) => async (dispatch, getState) => {
         const {
             userSignin: { userInfo },
         } = getState();
-        const { data } = await Axios.get(`/api/orders/orders/${orderNo}`, {
-            headers: {
-                Authorization: `Bearer ${userInfo.token}`,
-            },
-        });
+        const { data } = await Axios.get(`/api/orders/orders/${orderNo}`);
         dispatch({ type: ORDER_DETAILS_SUCCESS, payload: data });
     } catch (error) {
+        console.log(error.response?.data?.message)
         dispatch({
             type: ORDER_DETAILS_FAILED,
             payload: error.response?.data?.message || error.message,

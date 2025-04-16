@@ -8,6 +8,7 @@ import OrderSetupComponent from '../component/OrderSetupComponent';
 import OrderView from '../component/orderView';
 import { listOrders } from '../Actions/orderActions';
 
+
 function OrderPage() {
     const userSignin = useSelector(state => state.userSignin);
     const { userInfo } = userSignin;
@@ -19,6 +20,9 @@ function OrderPage() {
     const [selectedContext, setSelectedContext] = useState('invoice')
 
     const [formData, setFormData] = useState(null);
+
+    
+
 
     const navigate = useNavigate()
     const dispatch = useDispatch()
@@ -121,18 +125,11 @@ function OrderPage() {
                                                 </td>
                                                 <td><span class="text-black font-w500">#{order.orderNo}</span></td>
                                                 <td><span class="text-black text-nowrap">{order.createdAt}</span></td>
-                                                {/* <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <img src="https://dompet.dexignlab.com/codeigniter/demo/public/assets/images/avatar/1.jpg" alt="" class="rounded me-3" width="50" />
-                                                        <div>
-                                                            <h6 class="fs-16 text-black font-w600 mb-0 text-nowrap">XYZ Store ID</h6>
-                                                            <span class="fs-14">Online Shop</span>
-                                                        </div>
-                                                    </div>
-                                                </td> */}
                                                 <td><span class="text-black">xyzstore@mail.com</span></td>
-                                                <td><span class="text-black">{order.orderTitle} </span></td>
-                                                <td><a href="javascript:void(0)" class="btn  btn-sm btn-success light">{order.orderStatus}</a></td>
+                                                <td><a class="text-black" target='_blank' href={`/order/${order?._id || ''}/pay?orderNo=${order?.orderNo}`}>{order.orderTitle} </a></td>
+                                                <td><a href="javascript:void(0)" class={order.orderStatus === '0' ? "btn btn-sm btn-success light" : order.orderStatus === '1' ? "btn btn-sm btn-warning light" : order.orderStatus === '2' ? "btn btn-sm btn-danger light" : "btn btn-sm btn-dark light"}>
+                                                    {['Active', 'Pending', 'Closed'][parseInt(order.orderStatus)]}
+                                                    </a></td>
                                                 <td class="text-end">
                                                     <div class="dropdown">
                                                         <a href="javascript:void(0);" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
@@ -143,8 +140,8 @@ function OrderPage() {
                                                             </svg>
                                                         </a>
                                                         <div class="dropdown-menu dropdown-menu-right">
-                                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                                            <a class="dropdown-item" href="javascript:void(0);">Edit</a>
+                                                            
+                                                            <a class="dropdown-item" onClick={() => { setShowForm(true), setFormData(order) }} ><i className='bi bi-pencil-square'></i> Edit</a>
                                                         </div>
                                                     </div>
                                                 </td>

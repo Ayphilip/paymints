@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux';
 import OrderPage from './Pages/OrderPage';
 import Preview from './Pages/Preview';
 import PaymentPage from './Pages/PaymentPage';
+import ProfilePage from './Pages/ProfilePage';
 
 function App() {
   const userSignin = useSelector(state => state.userSignin);
@@ -19,6 +20,7 @@ function App() {
       <Routes>
         <Route path='/'  element={<Signin/>}/>
         <Route path='/dashboard' element={<Home/>} />
+        <Route path='/profile' element={<ProfilePage/>} />
         <Route path='/paymentorder' element={<OrderPage/>}/>
         <Route path='/order' element={<Preview/>}/>
         <Route path='/order/:id/pay' element={<PaymentPage/>}/>
