@@ -12,14 +12,14 @@ const QRCodePattern = () => {
     canvas.height = 50;
 
     // Define colors and styles
-    const backgroundColor = ""; // Dark blue background
+    const backgroundColor = "#fff"; // Dark blue background
     const squareColor = "#ff0000"; // Cyan blue for figures
     const glowColor = "rgba(0, 221, 235, 0.5)"; // Glow effect color
 
     // Grid settings
     const gridSize = 5; // 5x5 grid
     const squareSize = 8; // Size of each rounded square (adjusted for smaller canvas)
-    const padding = 2; // Space between figures (scaled down)
+    const padding = 0; // Space between figures (scaled down)
     const offsetX = (canvas.width - (gridSize * (squareSize + padding) - padding)) / 2;
     const offsetY = (canvas.height - (gridSize * (squareSize + padding) - padding)) / 2;
     const cornerRadius = 2; // Radius for rounded corners
@@ -32,15 +32,15 @@ const QRCodePattern = () => {
     const drawGlowingRoundedSquare = (x, y) => {
       // Create radial gradient for glow effect
       const gradient = ctx.createRadialGradient(
-        x + squareSize / 2,
-        y + squareSize / 2,
+        x + squareSize,
+        y + squareSize,
         0,
-        x + squareSize / 2,
-        y + squareSize / 2,
+        x + squareSize,
+        y + squareSize,
         squareSize
       );
       gradient.addColorStop(0, squareColor);
-      gradient.addColorStop(1, glowColor);
+    //   gradient.addColorStop(1, glowColor);
 
       // Draw the rounded square with glow
       ctx.fillStyle = gradient;
