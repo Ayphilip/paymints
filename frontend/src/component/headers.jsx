@@ -142,7 +142,7 @@ function Headers({ props }) {
                         <li className="dropdown header-profile">
                             <a className="nav-link" href="javascript:void(0);" role="button" data-bs-toggle="dropdown">
                                 <img src="public/assets/images/profile/pic1.jpg" width="20" alt="" />
-                                <QRCodePattern />
+                                {/* <QRCodePattern /> */}
                                 <div className="header-info ms-3">
                                     <span className="font-w600 ">Hi, <b>{userInfo?.username}</b></span>
                                     <small className="text-end font-w400"><i className="las la-wallet ms-3 scale5"></i> {userInfo?.address && shortenAddress(userInfo?.address)}</small>
