@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Connection, PublicKey } from '@solana/web3.js';
-import { getAssociatedTokenAddress, getAccount, getMint } from '@solana/spl-token';
+import { getAssociatedTokenAddress, getAccount, getMint, getOrCreateAssociatedTokenAccount } from '@solana/spl-token';
 import { usePrivy, useSolanaWallets } from '@privy-io/react-auth';
 // import { getAccount } from '@solana/spl-token';
 const SOLANA_RPC = "https://mainnet.helius-rpc.com/?api-key=3ab17e93-2cda-4743-88e9-2b9beae7c07e";
@@ -209,6 +209,7 @@ export const networkConfig = [
 
 export const useTokenBalance = (tokenMint) => {
   const { wallets } = useSolanaWallets();
+  const { user } = usePrivy()
   const [state, setState] = useState({
     balance: null,          // Human-readable balance
     rawBalance: null,       // Raw lamport balance
@@ -223,80 +224,30 @@ export const useTokenBalance = (tokenMint) => {
     return new Connection(SOLANA_CONFIG.rpcEndpoint, SOLANA_CONFIG.commitment);
   }, []);
 
-  // Verify wallet by signing a message
-  const verifyWallet = useCallback(async (wallet) => {
-    if (!wallet) {
-      throw new Error('No wallet available');
-    }
-
-    try {
-      const message = 'Verify wallet for token balance';
-      const encodedMessage = new TextEncoder().encode(message);
-      const signature = await wallet.signMessage(encodedMessage);
-      console.log('Wallet signature:', signature);
-      return true;
-    } catch (err) {
-      console.error('Wallet verification failed:', err);
-      throw new Error('Failed to verify wallet');
-    }
-  }, []);
-
   // Fetch token balance
   const fetchBalance = useCallback(async () => {
-    console.log(wallets)
-    const wallet = wallets?.[0]; // Use the first connected wallet
-    if (!wallet || !tokenMint) {
-      console.warn('Missing prerequisites:', { wallet: !!wallet, tokenMint });
-      setState(prev => ({
-        ...prev,
-        balance: null,
-        rawBalance: null,
-        decimals: null,
-        error: 'Missing wallet or token mint'
-      }));
-      return;
-    }
+    const wall = user?.wallet?.address; 
 
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      // Verify wallet connectivity
-      if (!state.isWalletVerified) {
-        await verifyWallet(wallet);
-        setState(prev => ({ ...prev, isWalletVerified: true }));
-      }
 
       const connection = getConnection();
-      const walletPubKey = new PublicKey(wallet.address);
+      console.log(wall)
+      const walletPubKey = new PublicKey(wall);
       const mintPubKey = new PublicKey(tokenMint);
 
-      // Get associated token account address using @solana/spl-token
-      const ata = await getAssociatedTokenAddress(
-        mintPubKey,           // Token mint
-        walletPubKey          // Wallet public key
+
+      const ata = await getOrCreateAssociatedTokenAccount(
+        connection,
+        walletPubKey, // payer
+        mintPubKey,
+        walletPubKey, // recipient wallet
+        true // allowOwnerOffCurve
       );
-
-      // Fetch token account info
-      let tokenAccount;
-      try {
-        tokenAccount = await getAccount(connection, ata);
-      } catch (err) {
-        console.warn('No token account found for ATA:', ata.toBase58());
-        setState(prev => ({
-          ...prev,
-          balance: 0,
-          rawBalance: BigInt(0),
-          decimals: null,
-          isLoading: false,
-          error: 'Token account not found'
-        }));
-        return;
-      }
-
-      // Fetch mint info for decimals
       const mintInfo = await getMint(connection, mintPubKey);
       const decimals = mintInfo.decimals;
-      const rawBalance = tokenAccount.amount; // Already a BigInt from getAccount
+      const rawBalance = ata.amount; // Already a BigInt from getAccount
       const balance = Number(rawBalance) / Math.pow(10, decimals);
 
       console.log('Raw balance:', rawBalance.toString());
@@ -322,7 +273,7 @@ export const useTokenBalance = (tokenMint) => {
         error: err instanceof Error ? err.message : 'Unknown error'
       }));
     }
-  }, [wallets, tokenMint, verifyWallet, getConnection, state.isWalletVerified]);
+  }, [wallets, tokenMint, getConnection]);
 
   // Effect for initial fetch and polling
   useEffect(() => {

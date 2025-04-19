@@ -5,8 +5,8 @@ import { usePrivy } from '@privy-io/react-auth';
 import { shortenAddress } from './utils';
 
 const SolanaTransactionFetcher = () => {
-    const { user } = usePrivy();
-    const [address, setAddress] = useState(user?.wallet?.address || '');
+    const { user, ready } = usePrivy();
+    const [address, setAddress] = useState(ready && (user?.wallet?.address || ''));
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);

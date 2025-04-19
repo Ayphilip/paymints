@@ -17,7 +17,7 @@ import {
     clusterApiUrl,
     LAMPORTS_PER_SOL
 } from '@solana/web3.js';
-import { useConnectWallet, usePrivy, useSignTransaction, useSolanaWallets } from '@privy-io/react-auth';
+import { useConnectWallet, usePrivy, useSignTransaction, useSolanaWallets, useWallets } from '@privy-io/react-auth';
 import {
     getAssociatedTokenAddress,
     createTransferInstruction,
@@ -32,24 +32,24 @@ function PaymentPage() {
 
     const [newError, setNewError] = useState('')
     const [loadingState, setLoadingState] = useState(false)
-
+    const { ready, authenticated, user, login, logout, connectWallet } = usePrivy();
     const { wallets } = useSolanaWallets();
-    const { connectWallet } = useConnectWallet({
-        onSuccess: async ({ wallet }) => {
-            try {
-                if (wallets?.length > 0) {
-                    await wallets[0].loginOrLink();
-                }
-            } catch (err) {
-                console.error('Error during wallet login:', err);
-            }
-            console.log('Wallet connected successfully:', wallet);
-        },
-        onError: (error) => {
-            console.error('Wallet connection failed:', error);
-        },
-    });
-    const { ready, authenticated, user, linkWallet } = usePrivy();
+    // const { connectWallet } = useConnectWallet({
+    //     onSuccess: async ({ wallet }) => {
+    //         try {
+    //             if (wallets?.length > 0) {
+    //                 await wallets[0].loginOrLink();
+    //             }
+    //         } catch (err) {
+    //             console.error('Error during wallet login:', err);
+    //         }
+    //         console.log('Wallet connected successfully:', wallet);
+    //     },
+    //     onError: (error) => {
+    //         console.error('Wallet connection failed:', error);
+    //     },
+    // });
+    // const { ready, authenticated, user, linkWallet } = usePrivy();
 
 
 
@@ -71,110 +71,269 @@ function PaymentPage() {
     const [errState, setErrState] = useState(false)
     const [loadingPayment, setLoadingPayment] = useState(false)
     const [paymentStatus, setPaymentStatus] = useState(0)
-    const [paymentMessage, setpaymentMessage] = useState('')
+    const [paymentMessage, setPaymentMessage] = useState('')
+    const [isReconnecting, setIsReconnecting] = useState(false);
 
+
+    // const triggerPayment = async () => {
+    //     setLoadingPayment(true)
+    //     const provider = window?.solana;
+    //     try {
+    //         const connection = new Connection(
+    //             'https://mainnet.helius-rpc.com/?api-key=3ab17e93-2cda-4743-88e9-2b9beae7c07e',
+    //             'confirmed'
+    //         );
+
+    //         await provider.connect()
+    //         // Connect Phantom if not connected
+
+    //         const userAddress = user?.wallet?.address;
+    //         console.log("🔑 User Wallet Address:", userAddress);
+
+    //         const fromPubkey = new PublicKey(userAddress);
+    //         const recipient = new PublicKey(order?.createdBy?.address);
+    //         const mint = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'); // USDC
+    //         const amountToPush = parseFloat(paymentFormData?.paymentAmount || '0') * 1_000_000;
+    //         const amountInBaseUnits = Math.floor(amountToPush);
+
+    //         if (amountInBaseUnits <= 0) {
+    //             setPaymentStatus(1)
+    //             setpaymentMessage("❌ Invalid payment amount.");
+    //             setLoadingPayment(false)
+    //             alert("Invalid payment amount.");
+    //             return;
+    //         }
+
+    //         // Get sender token account (ATA)
+    //         // const senderATA = await getOrCreateAssociatedTokenAccount(
+    //         //     connection,
+    //         //     fromPubkey,
+    //         //     mint,
+    //         //     fromPubkey
+    //         // );
+
+    //         const senderATA = await getAssociatedTokenAddress(mint, fromPubkey, true)
+
+    //         let recipientATA;
+    //         try {
+    //             // recipientATA = await getOrCreateAssociatedTokenAccount(
+    //             //     connection,
+    //             //     fromPubkey, // payer
+    //             //     mint,
+    //             //     recipient, // recipient wallet
+    //             //     true // allowOwnerOffCurve
+    //             // );
+
+    //             recipientATA = await getAssociatedTokenAddress(mint, recipient, true)
+
+
+    //         } catch (err) {
+    //             setPaymentStatus(1)
+    //             setpaymentMessage("❌ Could not create/find recipient ATA", err);
+    //             setLoadingPayment(false)
+    //             alert("Could not complete payment. The recipient might not support this token.");
+    //             return;
+    //         }
+
+    //         // Build transfer instruction
+    //         console.log(senderATA)
+    //         console.log(recipientATA)
+    //         const transferIx = createTransferInstruction(
+    //             senderATA,
+    //             recipientATA,
+    //             fromPubkey,
+    //             amountInBaseUnits
+    //         );
+
+    //         const latestBlockhash = await connection.getLatestBlockhash();
+
+    //         const transaction = new Transaction().add(transferIx);
+    //         transaction.feePayer = fromPubkey;
+    //         transaction.recentBlockhash = latestBlockhash.blockhash;
+
+    //         console.log(transaction)
+
+    //         // Sign with Phantom
+
+    //         console.log("Transaction:", {
+    //             feePayer: transaction.feePayer.toBase58(),
+    //             recentBlockhash: transaction.recentBlockhash,
+    //             instructions: transaction.instructions.map(ix => ({
+    //               programId: ix.programId.toBase58(),
+    //               keys: ix.keys.map(k => k.pubkey.toBase58()),
+    //               data: ix.data.toString('hex')
+    //             }))
+    //           });
+
+    //         const signedTx = await provider.signTransaction(transaction)
+    //         const txid = await connection.sendRawTransaction(signedTx.serialize());
+
+    //         // Confirm transaction
+    //         await connection.confirmTransaction(
+    //             {
+    //                 signature: txid,
+    //                 blockhash: latestBlockhash.blockhash,
+    //                 lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+    //             },
+    //             'confirmed'
+    //         );
+    //         setPaymentStatus(2)
+    //         setpaymentMessage("✅ Payment successful! Transaction ID:", txid);
+    //         setLoadingPayment(false)
+    //         // alert(`Payment successful!\nTx ID: ${txid}`);
+    //     } catch (err) {
+    //         setPaymentStatus(1)
+    //         setpaymentMessage("❌ Payment failed:", err);
+    //         console.log("❌ Payment failed:", err);
+    //         setLoadingPayment(false)
+    //         alert("Payment failed. Please try again or check console for details.");
+    //     }
+    // };
+
+
+    const solanaWallet = wallets.find((wallet) => wallet.type === 'solana');
+
+    useEffect(() => {
+    
+        if (!ready || !authenticated || solanaWallet || isReconnecting) return;
+
+        const reconnectWallet = async () => {
+            setIsReconnecting(true);
+            try {
+                // Check linked accounts for a Solana wallet
+                const walletAccount = user?.linkedAccounts.find(
+                    (account) => account.type === 'wallet' && account.chainType === 'solana'
+                );
+
+                if (walletAccount) {
+                    // Attempt to reconnect the wallet
+                    await connectWallet({
+                        chain: 'solana',
+                        address: walletAccount.address,
+                        connectorType: walletAccount.connectorType, // e.g., 'injected' for Phantom/Solflare
+                    });
+                    
+                    console.log('Wallet reconnected:', walletAccount.address);
+                }
+            } catch (err) {
+                console.error('Failed to reconnect wallet:', err);
+                // Fallback to prompting user to reconnect
+            } finally {
+                setIsReconnecting(false);
+            }
+        };
+
+        if(!solanaWallet){reconnectWallet();}
+    }, [ready, authenticated, user, solanaWallet, isReconnecting]);
 
     const triggerPayment = async () => {
-        setLoadingPayment(true)
-        const provider = window?.solana;
+        console.log(wallets)
+        setLoadingPayment(true);
         try {
+            // Validate Privy and wallet state
+            if (!ready || !authenticated) {
+                throw new Error('Please log in to proceed.');
+            }
+            if (!solanaWallet) {
+                throw new Error('No Solana wallet connected. Please connect a wallet.');
+            }
+
+            // Get wallet details
+            const walletAddress = solanaWallet.address;
+            const walletClient = solanaWallet.walletClient; // Privy's wallet client for signing
+
+            // Validate inputs
+            if (!walletAddress || !order?.createdBy?.address) {
+                throw new Error('Missing wallet or recipient address');
+            }
+            const amount = parseFloat(paymentFormData?.paymentAmount || '0');
+            if (isNaN(amount) || amount <= 0) {
+                throw new Error('Invalid payment amount');
+            }
+
+            // Initialize Solana connection
             const connection = new Connection(
-                'https://mainnet.helius-rpc.com/?api-key=3ab17e93-2cda-4743-88e9-2b9beae7c07e',
+                `https://mainnet.helius-rpc.com/?api-key=3ab17e93-2cda-4743-88e9-2b9beae7c07e`,
                 'confirmed'
             );
 
-            await provider.connect()
-            // Connect Phantom if not connected
-
-            const userAddress = user?.wallet?.address;
-            console.log("🔑 User Wallet Address:", userAddress);
-
-            const fromPubkey = new PublicKey(userAddress);
-            const recipient = new PublicKey(order?.createdBy?.address);
+            const fromPubkey = new PublicKey(walletAddress);
+            const recipient = new PublicKey(order.createdBy.address);
             const mint = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'); // USDC
-            const amountToPush = parseFloat(paymentFormData?.paymentAmount || '0') * 1_000_000;
-            const amountInBaseUnits = Math.floor(amountToPush);
+            const amountInBaseUnits = Math.floor(amount * 1_000_000);
 
-            if (amountInBaseUnits <= 0) {
-                setPaymentStatus(1)
-                setpaymentMessage("❌ Invalid payment amount.");
-                setLoadingPayment(false)
-                alert("Invalid payment amount.");
-                return;
+            // Check SOL balance
+            const solBalance = await connection.getBalance(fromPubkey);
+            if (solBalance < 0.005 * 1_000_000_000) {
+                throw new Error('Insufficient SOL for transaction fees');
             }
 
-            // Get sender token account (ATA)
-            // const senderATA = await getOrCreateAssociatedTokenAccount(
-            //     connection,
-            //     fromPubkey,
-            //     mint,
-            //     fromPubkey
-            // );
+            // Get or create ATAs
+            const senderATA = await getOrCreateAssociatedTokenAccount(
+                connection,
+                fromPubkey, // payer
+                mint,
+                fromPubkey
+            );
+            const recipientATA = await getOrCreateAssociatedTokenAccount(
+                connection,
+                fromPubkey, // payer
+                mint,
+                recipient,
+                true // allowOwnerOffCurve
+            );
 
-            const senderATA = await getAssociatedTokenAddress(mint, fromPubkey, true)
-
-            let recipientATA;
-            try {
-                recipientATA = await getOrCreateAssociatedTokenAccount(
-                    connection,
-                    fromPubkey, // payer
-                    mint,
-                    recipient, // recipient wallet
-                    true // allowOwnerOffCurve
-                );
-            } catch (err) {
-                setPaymentStatus(1)
-                setpaymentMessage("❌ Could not create/find recipient ATA", err);
-                setLoadingPayment(false)
-                alert("Could not complete payment. The recipient might not support this token.");
-                return;
+            // Check USDC balance
+            const senderAccount = await getAccount(connection, senderATA.address);
+            console.log(senderATA.address)
+            if (senderAccount.amount < amountInBaseUnits) {
+                throw new Error('Insufficient USDC balance');
             }
 
             // Build transfer instruction
-            console.log(senderATA)
-            console.log(recipientATA.address)
             const transferIx = createTransferInstruction(
-                senderATA,
+                senderATA.address,
                 recipientATA.address,
                 fromPubkey,
                 amountInBaseUnits
             );
 
-            const latestBlockhash = await connection.getLatestBlockhash();
-
+            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             const transaction = new Transaction().add(transferIx);
             transaction.feePayer = fromPubkey;
-            transaction.recentBlockhash = latestBlockhash.blockhash;
+            transaction.recentBlockhash = blockhash;
 
-            console.log(transaction)
+            // Sign transaction using Privy
+            const serializedTx = transaction
+                .serialize({ requireAllSignatures: false, verifySignatures: false })
+                .toString('base64');
+            const signedTx = await walletClient.signTransaction(serializedTx);
 
-            // Sign with Phantom
-
-            console.log(wallets)
-
-            const signedTx = await provider.signTransaction(transaction)
-            const txid = await connection.sendRawTransaction(signedTx.serialize());
+            // Send transaction
+            const txid = await connection.sendRawTransaction(Buffer.from(signedTx, 'base64'));
 
             // Confirm transaction
             await connection.confirmTransaction(
-                {
-                    signature: txid,
-                    blockhash: latestBlockhash.blockhash,
-                    lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-                },
+                { signature: txid, blockhash, lastValidBlockHeight },
                 'confirmed'
             );
-            setPaymentStatus(2)
-            setpaymentMessage("✅ Payment successful! Transaction ID:", txid);
-            setLoadingPayment(false)
-            // alert(`Payment successful!\nTx ID: ${txid}`);
+
+            setPaymentStatus(2);
+            setPaymentMessage(`✅ Payment successful! Transaction ID: ${txid}`);
         } catch (err) {
-            setPaymentStatus(1)
-            setpaymentMessage("❌ Payment failed:", err);
-            setLoadingPayment(false)
-            alert("Payment failed. Please try again or check console for details.");
+            console.error('Detailed error:', err);
+            let errorMessage = err.message || 'Unknown error';
+            if (errorMessage.includes('User rejected') || errorMessage.includes('declined')) {
+                errorMessage = 'Payment cancelled by user';
+            }
+            setPaymentStatus(1);
+            setPaymentMessage(`❌ Payment failed: ${errorMessage}`);
+            alert(`Payment failed: ${errorMessage}`);
+        } finally {
+            setLoadingPayment(false);
         }
     };
+
 
     const checkDiscount = (e) => {
         e.preventDefault()

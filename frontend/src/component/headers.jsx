@@ -8,6 +8,7 @@ import { usePrivy, useSolanaWallets } from '@privy-io/react-auth';
 import { logouts } from '../Actions/userActions';
 import { shortenAddress, useTokenBalance } from './utils';
 import axios from 'axios';
+import QRCodePattern from './ProfilePattern';
 
 function Headers({ props }) {
     const userSignin = useSelector(state => state.userSignin);
@@ -141,6 +142,7 @@ function Headers({ props }) {
                         <li className="dropdown header-profile">
                             <a className="nav-link" href="javascript:void(0);" role="button" data-bs-toggle="dropdown">
                                 <img src="public/assets/images/profile/pic1.jpg" width="20" alt="" />
+                                <QRCodePattern />
                                 <div className="header-info ms-3">
                                     <span className="font-w600 ">Hi, <b>{userInfo?.username}</b></span>
                                     <small className="text-end font-w400"><i className="las la-wallet ms-3 scale5"></i> {userInfo?.address && shortenAddress(userInfo?.address)}</small>
@@ -150,6 +152,10 @@ function Headers({ props }) {
                                 <a href="/profile" className="dropdown-item ai-icon">
                                     <svg id="icon-user1" xmlns="http://www.w3.org/2000/svg" className="text-success" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                                     <span className="ms-2">Profile </span>
+                                </a>
+                                <a href="/alltransaction" className="dropdown-item ai-icon">
+                                    <svg id="icon-user1" xmlns="http://www.w3.org/2000/svg" className="text-warning" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                    <span className="ms-2">Payment History </span>
                                 </a>
                                 <a onClick={logoutUser} style={{ cursor: 'pointer' }} className="dropdown-item ai-icon">
                                     <svg id="icon-logout" xmlns="http://www.w3.org/2000/svg" className="text-danger" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
