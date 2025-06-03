@@ -11,6 +11,7 @@ import Preview from './Pages/Preview';
 import PaymentPage from './Pages/PaymentPage';
 import ProfilePage from './Pages/ProfilePage';
 import TransactionView from './Pages/TransactionView';
+import Homes from './Pages/PaymentTest';
 
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
         <Route path='/alltransaction' element={<TransactionView/>} />
         <Route path='/order' element={<Preview/>}/>
         <Route path='/order/:id/pay' element={<PaymentPage/>}/>
+        <Route path='/testingpayments' element={<Homes/>}/>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
   </BrowserRouter>

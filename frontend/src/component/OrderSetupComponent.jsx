@@ -138,7 +138,7 @@ function OrderSetupComponent({ comps, formDatas }) {
                         <div class="card-body">
                             {orderContext.map((item, index) =>
                                 <div style={{ cursor: 'pointer' }}
-                                    // onClick={() => setSelectedContext(index)} 
+                                    onClick={() => setSelectedContext(index)} 
                                     key={index} class={selectedContext === index ? "filter cm-content-box box-primary border" : "filter cm-content-box box-primary border"}>
                                     <div class="content-title border-0">
                                         <div class={selectedContext === index && "cpa"}>
